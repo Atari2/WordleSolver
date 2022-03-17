@@ -2,7 +2,7 @@
 
 // leave as 1 to reproduce the bug with iter_move ambiguous symbol
 // has to be changed in parallel with the if (0) in the inner CMakeLists
-#if 0
+#if 1
 
 #include "Board.h"
 #include "Solver.h"

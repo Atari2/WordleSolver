@@ -1,6 +1,6 @@
 ﻿cmake_minimum_required (VERSION 3.15)
 
-if (0)
+if (1)
 	set(CONDITIONAL_FILES "Solver.cpp" "Board.cpp")
 else()
 	set(CONDITIONAL_FILES "")
