@@ -4,19 +4,11 @@
 #include <vector>
 #include <type_traits>
 
-constexpr static bool DEBUG_BOARD = true;
-
 constexpr size_t static_starting_word_idx = 11452;
 constexpr size_t static_solution_idx = 271;
 constexpr size_t static_max_guesses = 6;
 
 enum class CharState { Wrong = 0, Misplaced = 1, Correct = 2 };
-
-template <typename T>
-requires std::is_array_v<T>
-constexpr size_t type_array_size() {
-    return std::extent_v<T>;
-}
 
 class Solver;
 

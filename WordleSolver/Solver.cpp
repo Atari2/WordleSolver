@@ -1,40 +1,5 @@
 #include "Solver.h"
-#include "Board.h"
 #include "Common.h"
-
-#include <ranges>
-#include <iostream>
-#include <random>
-#include <fstream>
-
-class FakeStream : std::ofstream {
-    public:
-    FakeStream() : std::ofstream{"NUL"} {}
-    template <typename T>
-    std::ostream& operator<<(const T&) {
-        return *this;
-    }
-};
-
-class DebugStream {
-    bool m_enabled = false;
-
-    FakeStream m_dummy_stream{};
-
-    public:
-    DebugStream() = default;
-    void debug_stream_enabled(bool enabled) { m_enabled = enabled; }
-    template <typename T>
-    std::ostream& operator<<(const T& t) {
-        if (m_enabled) {
-            return std::cout << t;
-        } else {
-            return m_dummy_stream << t;
-        }
-    }
-};
-
-static DebugStream dbg{};
 
 SolverFilter::SolverFilter(Solver& s) : solver(s) {}
 
@@ -93,23 +58,15 @@ bool SolverFilter::operator()(const std::string& word) {
 
 Solver::Solver(const std::vector<std::string>& dictionary, size_t idx) :
     m_dictionary(dictionary),
-    m_filtered_view(m_dictionary | std::views::filter(SolverFilter{*this})),
-    m_starting_index(idx) {
+    m_starting_index(idx),
+    m_filtered_view(m_dictionary | std::views::filter(SolverFilter{*this})) {
     m_filtered_iter = m_filtered_view.end();
 }
 
 std::string_view Solver::next_guess(const Board& board) {
     std::string_view guess;
     if (board.guesses() == 0) {
-        if constexpr (DEBUG_BOARD) {
-            // starts out by guessing "range" always
-            guess = m_dictionary[m_starting_index];
-        } else {
-            std::random_device rd;
-            std::mt19937 mt{rd()};
-            std::uniform_int_distribution dist{0ull, m_dictionary.size()};
-            guess = m_dictionary[dist(mt)];
-        }
+        guess = m_dictionary[m_starting_index];
     } else {
         const auto& m = board.board();
         const auto& prev_guess_row = m[board.guesses() - 1];

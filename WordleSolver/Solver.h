@@ -1,10 +1,43 @@
 #pragma once
+#include <algorithm>
 #include <array>
+#include <fstream>
+#include <iostream>
 #include <ranges>
 #include <string>
 #include <string_view>
 #include <vector>
+
 #include "Board.h"
+
+class FakeStream : std::ofstream {
+    public:
+    FakeStream() : std::ofstream{"NUL"} {}
+    template <typename T>
+    std::ostream& operator<<(const T&) {
+        return *this;
+    }
+};
+
+class DebugStream {
+    bool m_enabled = false;
+
+    FakeStream m_dummy_stream{};
+
+    public:
+    DebugStream() = default;
+    void debug_stream_enabled(bool enabled) { m_enabled = enabled; }
+    template <typename T>
+    std::ostream& operator<<(const T& t) {
+        if (m_enabled) {
+            return std::cout << t;
+        } else {
+            return m_dummy_stream << t;
+        }
+    }
+};
+
+static inline DebugStream dbg{};
 
 class Solver;
 
@@ -31,8 +64,8 @@ class Solver {
         constexpr LetterState(char _c) : state(GuessState::NotGuessed) {}
     };
 
-    static inline std::array<LetterState, 26> alphabet{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-                                                       'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+    std::array<LetterState, 26> alphabet{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+                                         'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 
     decltype(m_dictionary | std::views::filter(std::declval<SolverFilter>())) m_filtered_view;
     decltype(std::declval<decltype(m_filtered_view)>().begin()) m_filtered_iter;

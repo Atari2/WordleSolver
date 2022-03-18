@@ -43,3 +43,9 @@ template <typename T, size_t SZ>
 constexpr size_t array_size(const T(&)[SZ]) {
     return SZ;
 }
+
+template <typename T>
+requires std::is_array_v<T>
+constexpr size_t type_array_size() {
+    return std::extent_v<T>;
+}

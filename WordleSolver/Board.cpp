@@ -1,10 +1,8 @@
 #include "Board.h"
-#include <iostream>
 #include "Solver.h"
-#define WIN32_LEAN_AND_MEAN
-#define VC_EXTRALEAN
-#include <Windows.h>
+#include <iostream>
 #include <algorithm>
+#include <Windows.h>
 
 Board::Board(const std::vector<std::string>& sols, size_t i) {
     m_solution = sols[i];
