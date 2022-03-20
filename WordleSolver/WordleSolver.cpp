@@ -11,33 +11,26 @@ struct GuessData {
     size_t total_guesses = 0;
     size_t guessed = 0;
     size_t max_guesses = 0;
-    size_t min_guesses = 0;
+    size_t min_guesses = std::numeric_limits<size_t>::max();
 };
 
 bool solve_guess(Board& b, Solver& s, GuessData& data) {
     while (!b.solved() && b.guesses() < b.max_guesses()) {
         b.guess(s.next_guess(b));
     }
-    // b.print(s);
+    b.print(s);
     size_t n_guesses = b.guesses();
-    if (b.solved()) {
-        data.total_guesses += n_guesses;
+    bool solved = b.solved();
+    data.total_guesses += n_guesses;
+    if (solved) {
         data.guessed++;
-        // std::cout << "Solved in " << b.guesses() << " guesse(s), the word was " << b.solution() << "\n\n";
-        if (data.total_guesses == 0) {
-            data.max_guesses = n_guesses;
-            data.min_guesses = n_guesses;
-        } else {
-            if (data.max_guesses < n_guesses)
-                data.max_guesses = n_guesses;
-            else if (data.min_guesses > n_guesses)
-                data.min_guesses = n_guesses;
-        }
-        return true;
+        std::cout << "Solved in " << b.guesses() << " guesse(s), the word was " << b.solution() << "\n\n";
     } else {
         std::cout << "Didn't solve it, the word was " << b.solution() << "\n\n";
-        return false;
     }
+    data.max_guesses = std::max(data.max_guesses, n_guesses);
+    data.min_guesses = std::min(data.min_guesses, n_guesses);
+    return solved;
 }
 
 using namespace std::chrono;
@@ -56,7 +49,6 @@ int main(int argc, char** argv) {
         for (size_t i = 0; i < sol_idx; i++) {
             Board b{solutions, i};
             Solver s{dict};
-            // std::cout << "[ Day " << (i + 1) << " ]\n";
             if (!solve_guess(b, s, data)) b.print(s);
         }
         std::cout << "Correctly guessed " << data.guessed << " out of " << sol_idx << '\n';
