@@ -3,7 +3,8 @@
 
 SolverFilter::SolverFilter(Solver& s) : solver(s) {}
 
-bool SolverFilter::operator()(const std::string& word) {
+bool SolverFilter::operator()(const Word& wordt) {
+    const auto& word = wordt.word;
     const auto& alphabet = solver.alphabet;
     using enum Solver::GuessState;
     for (char c : word) {
@@ -56,9 +57,8 @@ bool SolverFilter::operator()(const std::string& word) {
     return true;
 };
 
-Solver::Solver(const std::vector<std::string>& dictionary, size_t idx) :
+Solver::Solver(const std::vector<Word>& dictionary) :
     m_dictionary(dictionary),
-    m_starting_index(idx),
     m_filtered_view(m_dictionary | std::views::filter(SolverFilter{*this})) {
     m_filtered_iter = m_filtered_view.end();
 }
@@ -66,7 +66,7 @@ Solver::Solver(const std::vector<std::string>& dictionary, size_t idx) :
 std::string_view Solver::next_guess(const Board& board) {
     std::string_view guess;
     if (board.guesses() == 0) {
-        guess = m_dictionary[m_starting_index];
+        guess = m_dictionary.front().word;
     } else {
         const auto& m = board.board();
         const auto& prev_guess_row = m[board.guesses() - 1];
@@ -93,9 +93,9 @@ std::string_view Solver::next_guess(const Board& board) {
         }
         if (m_filtered_iter == m_filtered_view.end()) {
             m_filtered_iter = m_filtered_view.begin();
-            guess = *m_filtered_iter;
+            guess = (*m_filtered_iter).word;
         } else {
-            guess = *++m_filtered_iter;
+            guess = (*++m_filtered_iter).word;
         }
     }
     m_history[board.guesses()] = guess;

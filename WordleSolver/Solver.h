@@ -8,6 +8,7 @@
 #include <string_view>
 #include <vector>
 
+#include "data/DictionaryLoader.h"
 #include "Board.h"
 
 class FakeStream : std::ofstream {
@@ -46,14 +47,13 @@ class SolverFilter {
 
     public:
     SolverFilter(Solver& s);
-    bool operator()(const std::string& word);
+    bool operator()(const Word& wordt);
 };
 
 class Solver {
     friend SolverFilter;
-    const std::vector<std::string>& m_dictionary;
+    const std::vector<Word>& m_dictionary;
     std::array<std::string_view, Board::max_guesses()> m_history;
-    size_t m_starting_index;
 
     enum class GuessState : uint8_t { NotGuessed = 0, Wrong = 1, Misplaced = 2, Correct = 4 };
 
@@ -71,7 +71,7 @@ class Solver {
     decltype(std::declval<decltype(m_filtered_view)>().begin()) m_filtered_iter;
 
     public:
-    Solver(const std::vector<std::string>& dictionary, size_t idx);
+    Solver(const std::vector<Word>& dictionary);
 
     std::string_view history(size_t idx) const { return m_history[idx]; }
     std::string_view next_guess(const Board&);
