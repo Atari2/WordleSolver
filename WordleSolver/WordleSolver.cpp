@@ -33,38 +33,84 @@ bool solve_guess(Board& b, Solver& s, GuessData& data) {
     return solved;
 }
 
+bool solve_guess(Board& b, Solver& s) {
+    while (!b.solved() && b.guesses() < b.max_guesses()) {
+        b.guess(s.next_guess(b));
+    }
+    b.print(s);
+    size_t n_guesses = b.guesses();
+    bool solved = b.solved();
+    if (solved) {
+        std::cout << "Solved in " << b.guesses() << " guesse(s), the word was " << b.solution() << "\n\n";
+    } else {
+        std::cout << "Didn't solve it, the word was " << b.solution() << "\n\n";
+    }
+    return solved;
+}
+
 using namespace std::chrono;
 
+void solve_loop(const std::vector<std::string>& solutions, const std::vector<Word>& dict, size_t start, size_t end) {
+    GuessData data{};
+    for (size_t i = start; i < end; i++) {
+        Board b{solutions, i};
+        Solver s{dict};
+        if (!solve_guess(b, s, data)) b.print(s);
+    }
+    std::cout << "Correctly guessed " << data.guessed << " out of " << (end - start) << '\n';
+    std::cout << "Max guesses " << data.max_guesses << ", Min guesses " << data.min_guesses << '\n';
+    std::cout << "Average guesses: " << (static_cast<double>(data.total_guesses) / static_cast<double>(end - start))
+              << '\n';
+}
+
 int main(int argc, char** argv) {
+    constexpr auto help_message = R"(
+There are 3 ways to invoke this program:
+    - If you invoke it without arguments it'll just try to solve all wordles from day 0 to current day.
+    - If you invoke with 1 argument there are 2 options:
+        1 - A single number (e.g. ".\WordleSolver.exe 200"), this will make it attempt the Wordle of that day.
+        2 - Two numbers divided by a hyphen (e.g. ".\WordleSolver.exe 1-20") this will make it attempt the wordles of days [begin, end)
+)"sv;
     std::string_view files[2]{"data/Words.txt"sv, "data/Solutions.txt"sv};
     const auto& solutions = get_solutions(files[1]);
     const auto& dict = get_dictionary(files);
-    GuessData data{};
     if (argc != 2) {
         constexpr auto first_day = sys_days{2021y / June / 19};
-
         auto sol_idx_point = time_point{system_clock::now()} - time_point{first_day};
-        size_t sol_idx = floor<days>(sol_idx_point).count() + 1ull;
-
-        for (size_t i = 0; i < sol_idx; i++) {
-            Board b{solutions, i};
-            Solver s{dict};
-            if (!solve_guess(b, s, data)) b.print(s);
-        }
-        std::cout << "Correctly guessed " << data.guessed << " out of " << sol_idx << '\n';
-        std::cout << "Max guesses " << data.max_guesses << ", Min guesses " << data.min_guesses << '\n';
-        std::cout << "Average guesses: " << (static_cast<double>(data.total_guesses) / static_cast<double>(sol_idx))
-                  << '\n';
+        size_t sol_idx = duration_cast<days>(sol_idx_point).count() + 1ull;
+        solve_loop(solutions, dict, 0, sol_idx);
     } else {
-        size_t idx = 0;
-        auto res1 = std::from_chars(argv[1], argv[1] + strlen(argv[1]), idx);
-        if (res1.ec != std::errc{}) {
-            std::cout << "Invalid program arguments\n";
-            return EXIT_FAILURE;
+        std::string_view arg{argv[1]};
+        if (arg == "help") {
+            std::cout << help_message << '\n';
+            return EXIT_SUCCESS;
         }
-        Board b{solutions, idx};
-        Solver s{dict};
-        solve_guess(b, s, data);
+        if (size_t idx = arg.find('-'); idx != std::string_view::npos) {
+            size_t start_idx = 0;
+            size_t end_idx = 0;
+            std::string_view start = arg.substr(0, idx);
+            std::string_view end = arg.substr(idx + 1);
+            auto res1 = std::from_chars(start.data(), start.data() + start.size(), start_idx);
+            auto res2 = std::from_chars(end.data(), end.data() + end.size(), end_idx);
+            if (res1.ec != std::errc{} || res2.ec != std::errc{}) {
+                std::cout << "Invalid program arguments\n";
+                std::cout << help_message << '\n';
+                return EXIT_FAILURE;
+            }
+            if (start_idx > end_idx) std::swap(start_idx, end_idx);
+            solve_loop(solutions, dict, start_idx, end_idx);
+        } else {
+            idx = 0;
+            auto res1 = std::from_chars(arg.data(), arg.data() + arg.size(), idx);
+            if (res1.ec != std::errc{}) {
+                std::cout << "Invalid program arguments\n";
+                std::cout << help_message << '\n';
+                return EXIT_FAILURE;
+            }
+            Board b{solutions, idx};
+            Solver s{dict};
+            solve_guess(b, s);
+        }
     }
     return EXIT_SUCCESS;
 }
