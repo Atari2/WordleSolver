@@ -39,8 +39,6 @@ constexpr double evalute_word(std::string_view word) {
 }
 
 void Word::evaluate() {
-    constexpr auto awake = evalute_word("stiff");
-    constexpr auto neafe = evalute_word("stimy");
     value = evalute_word(word);
 }
 

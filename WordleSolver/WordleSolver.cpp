@@ -55,7 +55,7 @@ void solve_loop(const std::vector<std::string>& solutions, const std::vector<Wor
     for (size_t i = start; i < end; i++) {
         Board b{solutions, i};
         Solver s{dict};
-        if (!solve_guess(b, s, data)) b.print(s);
+        solve_guess(b, s, data);
     }
     std::cout << "Correctly guessed " << data.guessed << " out of " << (end - start) << '\n';
     std::cout << "Max guesses " << data.max_guesses << ", Min guesses " << data.min_guesses << '\n';
@@ -71,7 +71,7 @@ There are 3 ways to invoke this program:
         1 - A single number (e.g. ".\WordleSolver.exe 200"), this will make it attempt the Wordle of that day.
         2 - Two numbers divided by a hyphen (e.g. ".\WordleSolver.exe 1-20") this will make it attempt the wordles of days [begin, end)
 )"sv;
-    std::string_view files[2]{"data/Words.txt"sv, "data/Solutions.txt"sv};
+    std::string_view files[]{"data/Words.txt"sv, "data/Solutions.txt"sv};
     const auto& solutions = get_solutions(files[1]);
     const auto& dict = get_dictionary(files);
     if (argc != 2) {
@@ -81,7 +81,7 @@ There are 3 ways to invoke this program:
         solve_loop(solutions, dict, 0, sol_idx);
     } else {
         std::string_view arg{argv[1]};
-        if (arg == "help") {
+        if (arg == "help"sv) {
             std::cout << help_message << '\n';
             return EXIT_SUCCESS;
         }
@@ -93,7 +93,7 @@ There are 3 ways to invoke this program:
             auto res1 = std::from_chars(start.data(), start.data() + start.size(), start_idx);
             auto res2 = std::from_chars(end.data(), end.data() + end.size(), end_idx);
             if (res1.ec != std::errc{} || res2.ec != std::errc{}) {
-                std::cout << "Invalid program arguments\n";
+                std::cout << "Invalid program arguments\n"sv;
                 std::cout << help_message << '\n';
                 return EXIT_FAILURE;
             }
@@ -103,7 +103,7 @@ There are 3 ways to invoke this program:
             idx = 0;
             auto res1 = std::from_chars(arg.data(), arg.data() + arg.size(), idx);
             if (res1.ec != std::errc{}) {
-                std::cout << "Invalid program arguments\n";
+                std::cout << "Invalid program arguments\n"sv;
                 std::cout << help_message << '\n';
                 return EXIT_FAILURE;
             }
