@@ -1,9 +1,8 @@
 #include "Solver.h"
-#include "Common.h"
 
 SolverFilter::SolverFilter(Solver& s) : solver(s) {}
 
-bool SolverFilter::operator()(const Word& wordt) {
+bool SolverFilter::operator()(const WordView& wordt) {
     const auto& word = wordt.word;
     const auto& alphabet = solver.alphabet;
     using enum Solver::GuessState;
@@ -57,9 +56,8 @@ bool SolverFilter::operator()(const Word& wordt) {
     return true;
 };
 
-Solver::Solver(const std::vector<Word>& dictionary) :
-    m_dictionary(dictionary),
-    m_filtered_view(m_dictionary | std::views::filter(SolverFilter{*this})) {
+Solver::Solver(const std::span<const WordView>& dictionary) :
+    m_dictionary(dictionary), m_filtered_view(m_dictionary | std::views::filter(SolverFilter{*this})) {
     m_filtered_iter = m_filtered_view.end();
 }
 

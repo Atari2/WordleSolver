@@ -1,11 +1,10 @@
-#include "Board.h"
 #include "Solver.h"
-#include "data/DictionaryLoader.h"
 #include <charconv>
 #include <chrono>
 #include <iostream>
 
 using namespace std::string_view_literals;
+using namespace std::chrono;
 
 struct GuessData {
     size_t total_guesses = 0;
@@ -48,9 +47,7 @@ bool solve_guess(Board& b, Solver& s) {
     return solved;
 }
 
-using namespace std::chrono;
-
-void solve_loop(const std::vector<std::string>& solutions, const std::vector<Word>& dict, size_t start, size_t end) {
+void solve_loop(const std::span<const std::string_view>& solutions, const std::span<const WordView>& dict, size_t start, size_t end) {
     GuessData data{};
     for (size_t i = start; i < end; i++) {
         Board b{solutions, i};
@@ -71,9 +68,8 @@ There are 3 ways to invoke this program:
         1 - A single number (e.g. ".\WordleSolver.exe 200"), this will make it attempt the Wordle of that day.
         2 - Two numbers divided by a hyphen (e.g. ".\WordleSolver.exe 1-20") this will make it attempt the wordles of days [begin, end)
 )"sv;
-    std::string_view files[]{"data/Words.txt"sv, "data/Solutions.txt"sv};
-    const auto& solutions = get_solutions(files[1]);
-    const auto& dict = get_dictionary(files);
+    const auto& solutions = get_solutions();
+    const auto& dict = get_dictionary();
     if (argc != 2) {
         constexpr auto first_day = sys_days{2021y / June / 19};
         auto sol_idx_point = time_point{system_clock::now()} - time_point{first_day};

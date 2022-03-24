@@ -1,16 +1,12 @@
 #include "DictionaryLoader.h"
 #include "../Common.h"
-#include <algorithm>
-#include <fstream>
-#include <iomanip>
-#include <locale>
 #include <numeric>
 
 Word::Word(std::string word_) : word(std::move(word_)) {
     evaluate();
 }
 
-constexpr double evalute_word(std::string_view word) {
+constexpr double evaluate_word(std::string_view word) {
     uint8_t letter_counts[26]{};
     constexpr char vowels[]{'a', 'e', 'i', 'o', 'u'};
 
@@ -39,55 +35,22 @@ constexpr double evalute_word(std::string_view word) {
 }
 
 void Word::evaluate() {
-    value = evalute_word(word);
+    value = evaluate_word(word);
 }
 
-struct comma_sep : std::ctype<char> {
-    comma_sep() : std::ctype<char>(get_table()) {}
-    static mask const* get_table() {
-        static mask rc[table_size]{};
-        rc[','] = std::ctype_base::space;
-        rc['\n'] = std::ctype_base::space;
-        return &rc[0];
-    }
-};
-
-const std::vector<Word>& get_dictionary(std::span<std::string_view> filenames) {
-    static std::vector<Word> dictionary{};
-    std::string curr_word{};
-    if (dictionary.empty()) {
-        for (const auto& filename : filenames) {
-            std::ifstream file{filename.data()};
-            file.imbue(std::locale(file.getloc(), new comma_sep));
-            if (file) {
-                while (!file.eof()) {
-                    file >> std::quoted(curr_word);
-                    dictionary.push_back(Word{curr_word});
-                }
-            } else {
-                throw std::runtime_error{"Failed to open file"};
-            }
-        }
-        std::sort(dictionary.begin(), dictionary.end(),
-                  [](const Word& lhs, const Word& rhs) { return lhs.value > rhs.value; });
-    }
-    return dictionary;
+void WordView::evaluate() const {
+    value = evaluate_word(word);
 }
 
-const std::vector<std::string>& get_solutions(std::string_view filename) {
-    static std::vector<std::string> solutions{};
-    if (solutions.empty()) {
-        std::ifstream file{filename.data()};
-        file.imbue(std::locale(file.getloc(), new comma_sep));
-        if (file) {
-            std::string curr_word{};
-            while (!file.eof()) {
-                file >> std::quoted(curr_word);
-                solutions.push_back(curr_word);
-            }
-        } else {
-            throw std::runtime_error{"Failed to open file"};
-        }
-    }
-    return solutions;
+// I have this include here because including this file 
+// makes Visual Studio intellisense die completely from the include point onwards.
+// this way the only part of the file that doesn't have intellisense
+// are these lines here
+#include "Dictionary.h"
+std::span<const WordView> get_dictionary() {
+    return std::span{words.begin(), words.end()};
+}
+
+std::span<const std::string_view> get_solutions() {
+    return std::span{solutions.begin(), solutions.end()};
 }

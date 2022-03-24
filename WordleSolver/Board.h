@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <type_traits>
+#include <span>
 
 constexpr size_t static_max_guesses = 6;
 
@@ -16,7 +17,7 @@ class Board {
     size_t n_guess = 0;
 
     public:
-    Board(const std::vector<std::string>& sols, size_t i);
+    Board(const std::span<const std::string_view>& sols, size_t i);
 
     using type = decltype(m_board);
 

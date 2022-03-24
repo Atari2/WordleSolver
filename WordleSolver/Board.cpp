@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <Windows.h>
 
-Board::Board(const std::vector<std::string>& sols, size_t i) {
+Board::Board(const std::span<const std::string_view>& sols, size_t i) {
     m_solution = sols[i];
 }
 

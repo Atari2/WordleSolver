@@ -1,7 +1,6 @@
 #pragma once
-#include <string_view>
-#include <vector>
 #include <span>
+#include <string_view>
 
 struct Word {
     std::string word;
@@ -11,5 +10,17 @@ struct Word {
     void evaluate();
 };
 
-const std::vector<Word>& get_dictionary(std::span<std::string_view> filenames);
-const std::vector<std::string>& get_solutions(std::string_view filename);
+struct WordView {
+    std::string_view word;
+    mutable double value;
+
+    constexpr WordView(std::string_view word_) : word(word_), value(0.0) {}
+    void evaluate() const;
+};
+
+constexpr WordView operator""_w(const char* ptr, size_t sz) {
+    return WordView{std::string_view{ptr, sz}};
+}
+
+std::span<const WordView> get_dictionary();
+std::span<const std::string_view> get_solutions();
