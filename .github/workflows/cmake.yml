@@ -26,5 +26,5 @@ jobs:
       uses: actions/upload-artifact@v3.0.0
       with:
         name: WordleSolver
-        path: ${{github.workspace}}/build/**/*.exe
+        path: ${{github.workspace}}/build/WordleSolver/Release/WordleSolver.exe
 
