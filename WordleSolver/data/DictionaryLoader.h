@@ -32,14 +32,27 @@ constexpr double evaluate_word(const std::string_view& word) {
     return total_occurrence_freq + vowel_boost - (double_penalty * 2.0);
 }
 
+constexpr uint32_t construct_word_mask(const std::string_view& word) {
+    uint32_t mask = 0;
+    for (char c : word) {
+        mask |= (1 << (c - 'a'));
+    }
+    return mask;
+}
+
 struct WordView {
     std::string_view word;
+    uint32_t word_mask;
+    bool marked;
     double value;
 
-    constexpr WordView(std::string_view word_) : word(word_), value(evaluate_word(word_)) {}
+    constexpr WordView(std::string_view word_) :
+        word(word_), word_mask(construct_word_mask(word_)), value(evaluate_word(word_)), marked(false) {}
     constexpr WordView& operator=(const WordView& copy) {
         word = copy.word;
         value = copy.value;
+        word_mask = copy.word_mask;
+        marked = copy.marked;
         return *this;
     }
 };

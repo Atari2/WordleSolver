@@ -49,3 +49,9 @@ requires std::is_array_v<T>
 constexpr size_t type_array_size() {
     return std::extent_v<T>;
 }
+
+#if DEBUG_PRINT
+#define dbg(expr) std::cout << expr
+#else
+#define dbg(expr)
+#endif

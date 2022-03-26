@@ -6,32 +6,31 @@ bool SolverFilter::operator()(const WordView& wordt) {
     const auto& word = wordt.word;
     const auto& alphabet = solver.alphabet;
     using enum Solver::GuessState;
-    for (char c : word) {
-        if (alphabet[c - 'a'].state == Wrong) {
-            dbg << "Excluding " << word << " because it had a character that's not in the solution\n";
-            return false;
-        }
+
+    if (solver.alphabet_mask & wordt.word_mask) {
+        dbg("Excluding " << word << " because it had a character that's not in the solution\n");
+        return false;
     }
-    if (std::find(solver.m_history.begin(), solver.m_history.end(), word) != solver.m_history.end()) {
-        dbg << "Excluding " << word << " because it has already been guessed\n";
+    if (wordt.marked) {
+        dbg("Excluding " << word << " because it has already been guessed\n");
         return false;
     }
     for (size_t i = 0; i < alphabet.size(); i++) {
         if ((alphabet[i].state & Correct) == Correct) {
             for (auto idx : alphabet[i].indexes_correct) {
                 if (word[idx] != static_cast<char>(i + 'a')) {
-                    dbg << "Excluding " << word << " because it doesn't have the letter " << (char)(i + 'a')
-                        << " in the correct spot\n";
+                    dbg("Excluding " << word << " because it doesn't have the letter " << (char)(i + 'a')
+                                     << " in the correct spot\n");
                     return false;
                 }
             }
-            if ((alphabet[i].state & Wrong) == Wrong) {
+            if ((alphabet[i].state & Wrong) == Wrong && (alphabet[i].state & Misplaced) == NotGuessed) {
                 char letter = static_cast<char>(i + 'a');
                 size_t idx = word.find(letter, 0);
                 while (idx != std::string_view::npos) {
                     if (std::ranges::find(alphabet[i].indexes_correct, idx) == alphabet[i].indexes_correct.end()) {
-                        dbg << "Excluding " << word << " because has the letter " << (char)(i + 'a')
-                            << " in 2 spots, only one of which is correct\n";
+                        dbg("Excluding " << word << " because has the letter " << (char)(i + 'a')
+                                         << " in 2 spots, only one of which is correct\n");
                         return false;
                     }
                     idx = word.find(letter, idx + 1);
@@ -41,18 +40,18 @@ bool SolverFilter::operator()(const WordView& wordt) {
         if ((alphabet[i].state & Misplaced) == Misplaced) {
             for (auto idx : alphabet[i].indexes_misplaced) {
                 if (word[idx] == static_cast<char>(i + 'a')) {
-                    dbg << "Excluding " << word << " because it has the letter " << (char)(i + 'a')
-                        << " in the wrong spot\n";
+                    dbg("Excluding " << word << " because it has the letter " << (char)(i + 'a')
+                                     << " in the wrong spot\n");
                     return false;
                 }
             }
             if (word.find(i + 'a') == std::string::npos) {
-                dbg << "Excluding " << word << " because it doesn't have the letter " << (char)(i + 'a') << '\n';
+                dbg("Excluding " << word << " because it doesn't have the letter " << (char)(i + 'a') << '\n');
                 return false;
             }
         }
     }
-    dbg << "Including " << word << '\n';
+    dbg("Including " << word << '\n');
     return true;
 };
 
@@ -77,13 +76,16 @@ std::string_view Solver::next_guess(const Board& board) {
             auto& entry = alphabet[index];
             switch (prev_guess_row[i]) {
             case CharState::Wrong:
+                alphabet_mask |= ((entry.state == NotGuessed) << index);
                 entry.state |= Wrong;
                 break;
             case CharState::Misplaced:
+                alphabet_mask &= ~(1 << index);
                 entry.state |= Misplaced;
                 entry.indexes_misplaced.push_back(i);
                 break;
             case CharState::Correct:
+                alphabet_mask &= ~(1 << index);
                 entry.state |= Correct;
                 entry.indexes_correct.push_back(i);
                 break;
@@ -91,9 +93,13 @@ std::string_view Solver::next_guess(const Board& board) {
         }
         if (m_filtered_iter == m_filtered_view.end()) {
             m_filtered_iter = m_filtered_view.begin();
-            guess = (*m_filtered_iter).word;
+            auto& wordview = (*m_filtered_iter);
+            guess = wordview.word;
+            wordview.marked = true;
         } else {
-            guess = (*++m_filtered_iter).word;
+            auto& wordview = (*++m_filtered_iter);
+            guess = wordview.word;
+            wordview.marked = true;
         }
     }
     m_history[board.guesses()] = guess;

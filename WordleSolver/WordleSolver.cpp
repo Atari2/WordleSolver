@@ -1,3 +1,4 @@
+#define DEBUG_PRINT 0
 #include "Solver.h"
 #include <charconv>
 #include <chrono>
@@ -53,6 +54,7 @@ void solve_loop(const std::span<const std::string_view>& solutions, const std::s
         Board b{solutions, i};
         Solver s{dict};
         solve_guess(b, s, data);
+        std::for_each(dict.begin(), dict.end(), [](WordView& view) { view.marked = false; });
     }
     std::cout << "Correctly guessed " << data.guessed << " out of " << (end - start) << '\n';
     std::cout << "Max guesses " << data.max_guesses << ", Min guesses " << data.min_guesses << '\n';

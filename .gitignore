@@ -2,3 +2,15 @@ out
 CMakePresets.json
 StructLayoutSettings.json
 .vs
+CMakeFiles
+x64
+*.vcxproj
+*.vcxproj.*
+cmake_install.cmake
+WordleSolver.sln
+CMakeCache.txt
+WordleSolver/Debug
+WordleSolver/Release
+WordleSolver/RelWithDebInfo
+WordleSolver/MinSizeRel
+WordleSolver.dir

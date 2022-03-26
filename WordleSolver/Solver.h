@@ -1,7 +1,6 @@
 #pragma once
 #include <algorithm>
 #include <array>
-#include <fstream>
 #include <iostream>
 #include <ranges>
 #include <string>
@@ -10,35 +9,6 @@
 
 #include "data/DictionaryLoader.h"
 #include "Board.h"
-
-class FakeStream : std::ofstream {
-    public:
-    FakeStream() : std::ofstream{"NUL"} {}
-    template <typename T>
-    std::ostream& operator<<(const T&) {
-        return *this;
-    }
-};
-
-class DebugStream {
-    bool m_enabled = false;
-
-    FakeStream m_dummy_stream{};
-
-    public:
-    DebugStream() = default;
-    void debug_stream_enabled(bool enabled) { m_enabled = enabled; }
-    template <typename T>
-    std::ostream& operator<<(const T& t) {
-        if (m_enabled) {
-            return std::cout << t;
-        } else {
-            return m_dummy_stream << t;
-        }
-    }
-};
-
-static inline DebugStream dbg{};
 
 class Solver;
 
@@ -59,13 +29,20 @@ class Solver {
 
     struct LetterState {
         GuessState state;
-        std::vector<uint8_t> indexes_misplaced{};
-        std::vector<uint8_t> indexes_correct{};
+
+        // using std::basic_string enables the use of SSO, avoiding allocation
+        // since the inline buffer is more than 5 bytes, this is guaranteed to work and never allocate
+        using bytebuffer = std::basic_string<uint8_t>;
+
+        bytebuffer indexes_misplaced{};
+        bytebuffer indexes_correct{};
         constexpr LetterState(char _c) : state(GuessState::NotGuessed) {}
     };
 
     std::array<LetterState, 26> alphabet{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
                                          'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+
+    uint32_t alphabet_mask = 0;
 
     decltype(m_dictionary | std::views::filter(std::declval<SolverFilter>())) m_filtered_view;
     decltype(std::declval<decltype(m_filtered_view)>().begin()) m_filtered_iter;
