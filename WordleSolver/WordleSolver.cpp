@@ -48,13 +48,15 @@ bool solve_guess(Board& b, Solver& s) {
     return solved;
 }
 
-void solve_loop(const std::span<const std::string_view>& solutions, const std::span<WordView>& dict, size_t start, size_t end) {
+void solve_loop(const std::span<std::string_view>& solutions, const std::span<WordView>& dict, size_t start,
+                size_t end) {
     GuessData data{};
     for (size_t i = start; i < end; i++) {
         Board b{solutions, i};
         Solver s{dict};
         solve_guess(b, s, data);
-        std::for_each(dict.begin(), dict.end(), [](WordView& view) { view.marked = false; });
+        for (auto& view : dict)
+            view.marked = false;
     }
     std::cout << "Correctly guessed " << data.guessed << " out of " << (end - start) << '\n';
     std::cout << "Max guesses " << data.max_guesses << ", Min guesses " << data.min_guesses << '\n';

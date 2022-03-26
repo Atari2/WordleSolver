@@ -47,14 +47,7 @@ struct WordView {
     double value;
 
     constexpr WordView(std::string_view word_) :
-        word(word_), word_mask(construct_word_mask(word_)), value(evaluate_word(word_)), marked(false) {}
-    constexpr WordView& operator=(const WordView& copy) {
-        word = copy.word;
-        value = copy.value;
-        word_mask = copy.word_mask;
-        marked = copy.marked;
-        return *this;
-    }
+        word(word_), word_mask(construct_word_mask(word_)), marked(false), value(evaluate_word(word_)) {}
 };
 
 constexpr WordView operator""_w(const char* ptr, size_t sz) {
@@ -62,4 +55,4 @@ constexpr WordView operator""_w(const char* ptr, size_t sz) {
 }
 
 std::span<WordView> get_dictionary();
-std::span<const std::string_view> get_solutions();
+std::span<std::string_view> get_solutions();

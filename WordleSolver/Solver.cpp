@@ -1,4 +1,5 @@
 #include "Solver.h"
+constexpr size_t npos = std::string_view::npos;
 
 SolverFilter::SolverFilter(Solver& s) : solver(s) {}
 
@@ -16,20 +17,21 @@ bool SolverFilter::operator()(const WordView& wordt) {
         return false;
     }
     for (size_t i = 0; i < alphabet.size(); i++) {
-        if ((alphabet[i].state & Correct) == Correct) {
-            for (auto idx : alphabet[i].indexes_correct) {
-                if (word[idx] != static_cast<char>(i + 'a')) {
-                    dbg("Excluding " << word << " because it doesn't have the letter " << (char)(i + 'a')
+        const auto& entry = alphabet[i];
+        char letter = static_cast<char>(i + 'a');
+        if ((entry.state & Correct) == Correct) {
+            for (auto idx : entry.indexes_correct) {
+                if (word[idx] != letter) {
+                    dbg("Excluding " << word << " because it doesn't have the letter " << letter
                                      << " in the correct spot\n");
                     return false;
                 }
             }
-            if ((alphabet[i].state & Wrong) == Wrong && (alphabet[i].state & Misplaced) == NotGuessed) {
-                char letter = static_cast<char>(i + 'a');
-                size_t idx = word.find(letter, 0);
-                while (idx != std::string_view::npos) {
-                    if (std::ranges::find(alphabet[i].indexes_correct, idx) == alphabet[i].indexes_correct.end()) {
-                        dbg("Excluding " << word << " because has the letter " << (char)(i + 'a')
+            if ((entry.state & Wrong) == Wrong && (entry.state & Misplaced) == NotGuessed) {
+                size_t idx = word.find(letter);
+                while (idx != npos) {
+                    if (!entry.indexes_correct.contains(static_cast<uint8_t>(idx))) {
+                        dbg("Excluding " << word << " because it has the letter " << letter
                                          << " in 2 spots, only one of which is correct\n");
                         return false;
                     }
@@ -37,16 +39,15 @@ bool SolverFilter::operator()(const WordView& wordt) {
                 }
             }
         }
-        if ((alphabet[i].state & Misplaced) == Misplaced) {
-            for (auto idx : alphabet[i].indexes_misplaced) {
-                if (word[idx] == static_cast<char>(i + 'a')) {
-                    dbg("Excluding " << word << " because it has the letter " << (char)(i + 'a')
-                                     << " in the wrong spot\n");
+        if ((entry.state & Misplaced) == Misplaced) {
+            for (auto idx : entry.indexes_misplaced) {
+                if (word[idx] == letter) {
+                    dbg("Excluding " << word << " because it has the letter " << letter << " in the wrong spot\n");
                     return false;
                 }
             }
-            if (word.find(i + 'a') == std::string::npos) {
-                dbg("Excluding " << word << " because it doesn't have the letter " << (char)(i + 'a') << '\n');
+            if (word.find(letter) == npos) {
+                dbg("Excluding " << word << " because it doesn't have the letter " << letter << '\n');
                 return false;
             }
         }
