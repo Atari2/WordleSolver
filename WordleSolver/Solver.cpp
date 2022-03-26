@@ -56,7 +56,7 @@ bool SolverFilter::operator()(const WordView& wordt) {
     return true;
 };
 
-Solver::Solver(const std::span<const WordView>& dictionary) :
+Solver::Solver(const std::span<WordView>& dictionary) :
     m_dictionary(dictionary), m_filtered_view(m_dictionary | std::views::filter(SolverFilter{*this})) {
     m_filtered_iter = m_filtered_view.end();
 }

@@ -47,7 +47,7 @@ bool solve_guess(Board& b, Solver& s) {
     return solved;
 }
 
-void solve_loop(const std::span<const std::string_view>& solutions, const std::span<const WordView>& dict, size_t start, size_t end) {
+void solve_loop(const std::span<const std::string_view>& solutions, const std::span<WordView>& dict, size_t start, size_t end) {
     GuessData data{};
     for (size_t i = start; i < end; i++) {
         Board b{solutions, i};

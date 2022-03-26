@@ -217,7 +217,7 @@ static constexpr std::array solutions{
 "judge"sv, "rower"sv, "artsy"sv, "rural"sv, "shave"sv, "bobby"sv, "eclat"sv, "fella"sv, "gaily"sv, "harry"sv, "hasty"sv,
 "hydro"sv, "liege"sv, "octal"sv, "ombre"sv, "payer"sv, "sooth"sv, "unset"sv, "unlit"sv, "vomit"sv, "fanny"sv};
 
-static constexpr std::array words{
+static std::array words{
 "abacs"_w, "nodal"_w, "psyop"_w, "coups"_w, "pewit"_w, "mazut"_w, "grapy"_w, "weans"_w, "khaki"_w, "ascon"_w, "gland"_w,
 "dries"_w, "goras"_w, "polys"_w, "pubes"_w, "ensue"_w, "wells"_w, "rheum"_w, "lowly"_w, "bills"_w, "spumy"_w, "nabob"_w,
 "iftar"_w, "gemot"_w, "snees"_w, "leeks"_w, "gorps"_w, "shogs"_w, "manus"_w, "volae"_w, "abrim"_w, "feers"_w, "umble"_w,
