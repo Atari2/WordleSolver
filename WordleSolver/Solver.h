@@ -6,6 +6,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <optional>
 
 #include "data/DictionaryLoader.h"
 #include "Board.h"
@@ -24,6 +25,9 @@ class Solver {
     friend SolverFilter;
     const std::span<WordView>& m_dictionary;
     std::array<std::string_view, Board::max_guesses()> m_history;
+
+    using word_iter = std::span<WordView>::iterator;
+    using opt_ref = std::optional<std::reference_wrapper<WordView>>;
 
     enum class GuessState : uint8_t { NotGuessed = 0, Wrong = 1, Misplaced = 2, Correct = 4 };
 
@@ -47,9 +51,11 @@ class Solver {
     decltype(m_dictionary | std::views::filter(std::declval<SolverFilter>())) m_filtered_view;
     decltype(std::declval<decltype(m_filtered_view)>().begin()) m_filtered_iter;
 
+    opt_ref next_guess_special(word_iter begin, word_iter end);
+
     public:
     Solver(const std::span<WordView>& dictionary);
 
     std::string_view history(size_t idx) const { return m_history[idx]; }
-    std::string_view next_guess(const Board&);
+    std::tuple<std::string_view, bool> next_guess(const Board&);
 };

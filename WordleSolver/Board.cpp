@@ -8,8 +8,11 @@ Board::Board(const std::span<const std::string_view>& sols, size_t i) {
     m_solution = sols[i];
 }
 
-void Board::guess(std::string_view guessword) {
+void Board::guess(std::tuple<std::string_view, bool> word_special) {
+    const auto& [guessword, special] = word_special;
     uint8_t marked[26]{};
+    uint8_t misplaced_letters = 0;
+    uint8_t known_letters = 0;
     if (n_guess == max_guesses()) throw std::runtime_error("Maximum number of guesses reached");
     for (char c : m_solution)
         marked[c - 'a']++;
@@ -17,6 +20,7 @@ void Board::guess(std::string_view guessword) {
     for (size_t i = 0; i < guessword.size(); i++) {
         if (guessword[i] == m_solution[i]) {
             m_board[n_guess][i] = CharState::Correct;
+            known_letters++;
             marked[guessword[i] - 'a']--;
         }
     }
@@ -26,8 +30,16 @@ void Board::guess(std::string_view guessword) {
         uint8_t& times_found = marked[guessword[i] - 'a'];
         if (times_found > 0 && m_solution.find(guessword[i]) != std::string_view::npos) {
             m_board[n_guess][i] = CharState::Misplaced;
+            misplaced_letters++;
             times_found--;
         }
+    }
+    if (!special) {
+        m_new_info_obtained = known_letters * 2 + misplaced_letters > m_correct_letters * 2 + m_misplaced_letters;
+        m_correct_letters = known_letters;
+        m_misplaced_letters = misplaced_letters;
+    } else {
+        m_new_info_obtained = true;
     }
     n_guess++;
 }

@@ -41,9 +41,9 @@ bool solve_guess(Board& b, Solver& s) {
     size_t n_guesses = b.guesses();
     bool solved = b.solved();
     if (solved) {
-        std::cout << "Solved in " << b.guesses() << " guesse(s), the word was " << b.solution() << "\n\n";
+         std::cout << "Solved in " << b.guesses() << " guesse(s), the word was " << b.solution() << "\n\n ";
     } else {
-        std::cout << "Didn't solve it, the word was " << b.solution() << "\n\n";
+         std::cout << "Didn't solve it, the word was " << b.solution() << "\n\n";
     }
     return solved;
 }

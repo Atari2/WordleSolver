@@ -61,8 +61,25 @@ Solver::Solver(const std::span<WordView>& dictionary) :
     m_filtered_iter = m_filtered_view.end();
 }
 
-std::string_view Solver::next_guess(const Board& board) {
+Solver::opt_ref Solver::next_guess_special(Solver::word_iter begin, Solver::word_iter end) {
+    auto iter = std::find_if(begin, end, [&](const WordView& view) {
+        bool encountered[26]{};
+        bool has_double = false;
+        for (auto c : view.word) {
+            if (encountered[c - 'a']) has_double = true;
+            encountered[c - 'a'] = true;
+        }
+        if (has_double) return false;
+        return std::all_of(view.word.begin(), view.word.end(),
+                           [&](char c) { return alphabet[c - 'a'].state == GuessState::NotGuessed; });
+    });
+    if (iter == end) { return std::nullopt; }
+    return {*iter};
+}
+
+std::tuple<std::string_view, bool> Solver::next_guess(const Board& board) {
     std::string_view guess;
+    bool special_guess = false;
     if (board.guesses() == 0) {
         guess = m_dictionary.front().word;
     } else {
@@ -92,17 +109,28 @@ std::string_view Solver::next_guess(const Board& board) {
                 break;
             }
         }
-        if (m_filtered_iter == m_filtered_view.end()) {
-            m_filtered_iter = m_filtered_view.begin();
-            auto& wordview = (*m_filtered_iter);
-            guess = wordview.word;
-            wordview.marked = true;
-        } else {
-            auto& wordview = (*++m_filtered_iter);
-            guess = wordview.word;
-            wordview.marked = true;
+
+        if (!board.info_obtained() && board.guesses() < board.max_guesses() - 1) {
+            auto wordview = next_guess_special(m_filtered_iter.base(), m_dictionary.end());
+            if (wordview.has_value()) {
+                guess = wordview->get().word;
+                wordview->get().marked = true;
+                special_guess = true;
+            }
+        }
+        if (!special_guess) {
+            if (m_filtered_iter == m_filtered_view.end()) {
+                m_filtered_iter = m_filtered_view.begin();
+                auto& wordview = (*m_filtered_iter);
+                guess = wordview.word;
+                wordview.marked = true;
+            } else {
+                auto& wordview = (*++m_filtered_iter);
+                guess = wordview.word;
+                wordview.marked = true;
+            }
         }
     }
     m_history[board.guesses()] = guess;
-    return guess;
+    return {guess, special_guess};
 }
