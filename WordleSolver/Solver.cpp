@@ -1,4 +1,6 @@
 #include "Solver.h"
+
+namespace r = std::ranges;
 constexpr size_t npos = std::string_view::npos;
 
 SolverFilter::SolverFilter(Solver& s) : solver(s) {}
@@ -12,7 +14,7 @@ bool SolverFilter::operator()(const WordView& wordt) {
         dbg("Excluding " << word << " because it had a character that's not in the solution\n");
         return false;
     }
-    if (wordt.marked) {
+    if (r::find(solver.m_history, word) != solver.m_history.end()) {
         dbg("Excluding " << word << " because it has already been guessed\n");
         return false;
     }
@@ -63,15 +65,19 @@ Solver::Solver(const std::span<WordView>& dictionary) :
 
 Solver::opt_ref Solver::next_guess_special(Solver::word_iter begin, Solver::word_iter end) {
     auto iter = std::find_if(begin, end, [&](const WordView& view) {
-        bool encountered[26]{};
+        uint32_t encountered = 0;
         bool has_double = false;
         for (auto c : view.word) {
-            if (encountered[c - 'a']) has_double = true;
-            encountered[c - 'a'] = true;
+            uint32_t val = 1 << (c - 'a');
+            if (encountered & val) {
+                has_double = true;
+                break;
+            }
+            encountered |= val;
         }
         if (has_double) return false;
-        return std::all_of(view.word.begin(), view.word.end(),
-                           [&](char c) { return alphabet[c - 'a'].state == GuessState::NotGuessed; });
+        return !std::any_of(view.word.begin(), view.word.end(),
+                            [&](char c) { return alphabet[c - 'a'].state != GuessState::NotGuessed; });
     });
     if (iter == end) { return std::nullopt; }
     return {*iter};
@@ -114,7 +120,6 @@ std::tuple<std::string_view, bool> Solver::next_guess(const Board& board) {
             auto wordview = next_guess_special(m_filtered_iter.base(), m_dictionary.end());
             if (wordview.has_value()) {
                 guess = wordview->get().word;
-                wordview->get().marked = true;
                 special_guess = true;
             }
         }
@@ -123,11 +128,9 @@ std::tuple<std::string_view, bool> Solver::next_guess(const Board& board) {
                 m_filtered_iter = m_filtered_view.begin();
                 auto& wordview = (*m_filtered_iter);
                 guess = wordview.word;
-                wordview.marked = true;
             } else {
                 auto& wordview = (*++m_filtered_iter);
                 guess = wordview.word;
-                wordview.marked = true;
             }
         }
     }
