@@ -7,10 +7,10 @@ I wanted this to be as simple as it can be while still solving a nice amount of 
 
 In fact, this solver is not perfect (as in, it doesn't solve every single wordle), the current stats are:
 ```
-Correctly guessed 2149 out of 2309
+Correctly guessed 2152 out of 2309
 Max guesses 6, Min guesses 1
-Average guesses: 4.68601
+Average guesses: 4.67259
 ```
-with about a 93% success rate.
+with about a 93.2% success rate.
 
 It is MSVC only and requires C++23 (will require C++20 when std::ranges are available on /std:c++20 instead of /std:c++latest).

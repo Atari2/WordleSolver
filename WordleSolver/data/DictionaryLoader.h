@@ -4,9 +4,15 @@
 #include <string_view>
 
 constexpr double evaluate_word(const std::string_view& word) {
+    struct MappedLetter {
+        const uint8_t value;
+        constexpr MappedLetter(char c) : value{static_cast<uint8_t>(c - 'a')} {}
+        constexpr operator uint8_t() const { return value; }
+    };
+
     uint8_t letter_counts[26]{};
 
-    constexpr char vowels[]{'a', 'e', 'i', 'o', 'u'};
+    constexpr MappedLetter vowels[]{'a', 'e', 'i', 'o', 'u', 'y'};
 
     constexpr double occurrence_frequency[]{4.7, 6.8, 7.1, 6.1,  3.9, 4.1, 3.3, 7.2, 3.9, 1.1, 2.5,  3.1,  5.6,
                                             2.2, 2.5, 7.7, 0.96, 6.0, 4.1, 5.0, 2.9, 0.7, 2.7, 0.05, 0.36, 0.24};
@@ -14,14 +20,14 @@ constexpr double evaluate_word(const std::string_view& word) {
     double total_occurrence_freq =
     std::accumulate(word.begin(), word.end(), 0.0, [&occurrence_frequency, &letter_counts](double s, char c) {
         auto idx = static_cast<size_t>(c - 'a');
-        letter_counts[idx]++;
+        ++letter_counts[idx];
         return s + occurrence_frequency[idx];
     });
 
     // boost for vowels (but not too much)
     double vowel_boost = 0.0;
-    for (char c : vowels)
-        vowel_boost += word.contains(c) ? occurrence_frequency[c - 'a'] : 0.0;
+    for (uint8_t c : vowels)
+        vowel_boost += occurrence_frequency[c] * (letter_counts[c] > 0);
 
     size_t double_penalty =
     std::accumulate(std::begin(letter_counts), std::end(letter_counts), 0ull, [](size_t ret, uint8_t occ) -> size_t {
