@@ -1,8 +1,8 @@
 #include "Board.h"
 #include "Solver.h"
-#include <iostream>
-#include <algorithm>
 #include <Windows.h>
+#include <algorithm>
+#include <iostream>
 
 Board::Board(const std::span<const std::string_view>& sols, size_t i) {
     m_solution = sols[i];
@@ -52,6 +52,7 @@ bool Board::solved() const noexcept {
 
 void print_with_color(char c, CharState col) {
     char upper_c = std::toupper(c);
+#ifdef _WIN32
     HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
     constexpr auto yellow = FOREGROUND_GREEN | FOREGROUND_RED;
     constexpr auto green = FOREGROUND_GREEN;
@@ -67,6 +68,22 @@ void print_with_color(char c, CharState col) {
         SetConsoleTextAttribute(out, yellow);
         break;
     }
+#else
+    constexpr auto yellow = "\033[333m";
+    constexpr auto green = "\033[32m";
+    constexpr auto red = "\033[31m";
+    switch (col) {
+    case CharState::Correct:
+        std::cout << green;
+        break;
+    case CharState::Wrong:
+        std::cout << red;
+        break;
+    case CharState::Misplaced:
+        std::cout << yellow;
+        break;
+    }
+#endif
     std::cout << upper_c;
 }
 
@@ -76,6 +93,10 @@ void Board::print(const Solver& solv) const {
             print_with_color(solv.history(i)[j], m_board[i][j]);
         }
         std::cout << '\n';
+#ifdef _WIN32
         SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN);
+#else
+        std::cout << "\033[0m";
+#endif
     }
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <type_traits>
+#include <cstddef>
 
 template <typename E>
 requires std::is_enum_v<E>

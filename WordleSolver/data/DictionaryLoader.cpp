@@ -8,7 +8,7 @@ namespace r = std::ranges;
 std::span<WordView> get_dictionary() {
     static bool sorted = false;
     if (!sorted) {
-        r::sort(words, [](const WordView& lhs, const WordView& rhs) { return lhs.value > rhs.value; });
+        r::stable_sort(words, [](const WordView& lhs, const WordView& rhs) { return lhs.value > rhs.value; });
         sorted = true;
     }
     return std::span{words.begin(), words.end()};
