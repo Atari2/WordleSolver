@@ -1,6 +1,8 @@
 #include "Board.h"
 #include "Solver.h"
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include <algorithm>
 #include <iostream>
 
@@ -69,7 +71,7 @@ void print_with_color(char c, CharState col) {
         break;
     }
 #else
-    constexpr auto yellow = "\033[333m";
+    constexpr auto yellow = "\033[33m";
     constexpr auto green = "\033[32m";
     constexpr auto red = "\033[31m";
     switch (col) {
