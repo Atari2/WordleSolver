@@ -46,7 +46,7 @@ class Solver {
     std::array<LetterState, 26> alphabet{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
                                          'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 
-    uint32_t alphabet_mask = 0;
+    WordMask alphabet_mask = WordMask::NOLETTER;
 
     decltype(m_dictionary | std::views::filter(std::declval<SolverFilter>())) m_filtered_view;
     decltype(std::declval<decltype(m_filtered_view)>().begin()) m_filtered_iter;

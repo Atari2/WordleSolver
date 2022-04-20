@@ -10,7 +10,7 @@ bool SolverFilter::operator()(const WordView& wordt) {
     const auto& alphabet = solver.alphabet;
     using enum Solver::GuessState;
 
-    if (solver.alphabet_mask & wordt.word_mask) {
+    if ((solver.alphabet_mask & wordt.word_mask) != WordMask::NOLETTER) {
         dbg("Excluding " << word << " because it had a character that's not in the solution\n");
         return false;
     }
@@ -100,16 +100,16 @@ std::tuple<std::string_view, bool> Solver::next_guess(const Board& board) {
             auto& entry = alphabet[index];
             switch (prev_guess_row[i]) {
             case CharState::Wrong:
-                alphabet_mask |= ((entry.state == NotGuessed) << index);
+                alphabet_mask |= to_enum<WordMask>((entry.state == NotGuessed) << index);
                 entry.state |= Wrong;
                 break;
             case CharState::Misplaced:
-                alphabet_mask &= ~(1 << index);
+                alphabet_mask &= to_enum<WordMask>(~(1 << index));
                 entry.state |= Misplaced;
                 entry.indexes_misplaced.push_back(i);
                 break;
             case CharState::Correct:
-                alphabet_mask &= ~(1 << index);
+                alphabet_mask &= to_enum<WordMask>(~(1 << index));
                 entry.state |= Correct;
                 entry.indexes_correct.push_back(i);
                 break;

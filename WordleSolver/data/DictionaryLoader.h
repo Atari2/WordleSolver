@@ -2,6 +2,7 @@
 #include <numeric>
 #include <span>
 #include <string_view>
+#include "../Common.h"
 
 constexpr double evaluate_word(const std::string_view& word) {
     struct MappedLetter {
@@ -38,17 +39,47 @@ constexpr double evaluate_word(const std::string_view& word) {
     return total_occurrence_freq + vowel_boost - (double_penalty * 2.0);
 }
 
-constexpr uint32_t construct_word_mask(const std::string_view& word) {
-    uint32_t mask = 0;
+enum class WordMask : uint32_t {
+    NOLETTER = 0,
+    A = 0b000000000000000000000000000001,
+    B = 0b000000000000000000000000000010,
+    C = 0b000000000000000000000000000100,
+    D = 0b000000000000000000000000001000,
+    E = 0b000000000000000000000000010000,
+    F = 0b000000000000000000000000100000,
+    G = 0b000000000000000000000001000000,
+    H = 0b000000000000000000000010000000,
+    I = 0b000000000000000000000100000000,
+    J = 0b000000000000000000001000000000,
+    K = 0b000000000000000000010000000000,
+    L = 0b000000000000000000100000000000,
+    M = 0b000000000000000001000000000000,
+    N = 0b000000000000000010000000000000,
+    O = 0b000000000000000100000000000000,
+    P = 0b000000000000001000000000000000,
+    Q = 0b000000000000010000000000000000,
+    R = 0b000000000000100000000000000000,
+    S = 0b000000000001000000000000000000,
+    T = 0b000000000010000000000000000000,
+    U = 0b000000000100000000000000000000,
+    V = 0b000000001000000000000000000000,
+    W = 0b000000010000000000000000000000,
+    X = 0b000000100000000000000000000000,
+    Y = 0b000001000000000000000000000000,
+    Z = 0b000010000000000000000000000000,
+};
+
+constexpr WordMask construct_word_mask(const std::string_view& word) {
+    WordMask mask = WordMask::NOLETTER;
     for (char c : word) {
-        mask |= (1 << (c - 'a'));
+        mask |= to_enum<WordMask>(1 << (c - 'a'));
     }
     return mask;
 }
 
 struct WordView {
     std::string_view word;
-    uint32_t word_mask;
+    WordMask word_mask;
     double value;
 
     constexpr WordView(std::string_view word_) :
