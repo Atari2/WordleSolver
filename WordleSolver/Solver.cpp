@@ -32,7 +32,7 @@ bool SolverFilter::operator()(const WordView& wordt) {
             if ((entry.state & Wrong) == Wrong && (entry.state & Misplaced) == NotGuessed) {
                 size_t idx = word.find(letter);
                 while (idx != npos) {
-                    if (!entry.indexes_correct.contains(static_cast<uint8_t>(idx))) {
+                    if (entry.indexes_correct.find(static_cast<uint8_t>(idx)) == npos) {
                         dbg("Excluding " << word << " because it has the letter " << letter
                                          << " in 2 spots, only one of which is correct\n");
                         return false;
@@ -65,11 +65,11 @@ Solver::Solver(const std::span<WordView>& dictionary) :
 
 Solver::opt_ref Solver::next_guess_special(Solver::word_iter begin, Solver::word_iter end) {
     auto iter = std::find_if(begin, end, [&](const WordView& view) {
-        uint32_t encountered = 0;
+        WordMask encountered = WordMask::NOLETTER;
         bool has_double = false;
         for (auto c : view.word) {
-            uint32_t val = 1 << (c - 'a');
-            if (encountered & val) {
+            auto val = to_enum<WordMask>(1 << (c - 'a'));
+            if ((encountered & val) != WordMask::NOLETTER) {
                 has_double = true;
                 break;
             }

@@ -1,15 +1,15 @@
 #pragma once
+#include "Board.h"
+#include "data/DictionaryLoader.h"
 #include <algorithm>
 #include <array>
 #include <iostream>
+#include <optional>
 #include <ranges>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <optional>
-
-#include "data/DictionaryLoader.h"
-#include "Board.h"
 
 class Solver;
 
