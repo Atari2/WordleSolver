@@ -32,7 +32,10 @@ struct GuessData {
 struct RAIIPerfTimer {
     const high_resolution_clock::time_point start;
     RAIIPerfTimer() : start(high_resolution_clock::now()) {}
-    ~RAIIPerfTimer() { std::cout << "Elapsed " << (high_resolution_clock::now() - start) << '\n'; }
+    ~RAIIPerfTimer() { 
+        auto elapsed = (high_resolution_clock::now() - start);
+        std::cout << "Elapsed " << duration_cast<milliseconds>(elapsed) << " (" << elapsed << ")\n"; 
+    }
 };
 
 bool solve_guess(Board& b, Solver& s, GuessData& data, bool print_intermediate) {
@@ -125,10 +128,11 @@ int invalid_argument(std::string_view arg) {
 int main(int argc, char** argv) {
     const auto& solutions = get_solutions();
     const auto& dict = get_dictionary();
+    constexpr auto first_day = sys_days{2021y / June / 19};
+    auto sol_idx_point = time_point{system_clock::now()} - time_point{first_day};
+    size_t sol_idx = duration_cast<days>(sol_idx_point).count() + 1ull;
+    auto all_days = std::format("1-{}", solutions.size());
     if (argc < 2) {
-        constexpr auto first_day = sys_days{2021y / June / 19};
-        auto sol_idx_point = time_point{system_clock::now()} - time_point{first_day};
-        size_t sol_idx = duration_cast<days>(sol_idx_point).count() + 1ull;
         RAIIPerfTimer timer{};
         auto data = solve_loop(solutions, dict, 0, sol_idx);
         print_result(data, sol_idx);
@@ -150,6 +154,9 @@ int main(int argc, char** argv) {
             } else {
                 return invalid_argument(parallel_arg);
             }
+        } else if (argc == 2 && arg == "-p") {
+            parallel = true;
+            arg = all_days;
         }
         if (arg == "help"sv) {
             std::cout << help_message << '\n';
